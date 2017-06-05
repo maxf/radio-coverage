@@ -32,12 +32,12 @@ data_files = [
 
 def count_all_populations(geoms,data_path):
     geometry = json.loads(geoms)
-    total_population = ""
+    total_population = {}
 
     for filename in sorted(data_files):
         full_path = data_path + '/' + filename
         pop = count_population_file(full_path, geometry)
-        total_population += full_path + ': ' + str(pop) + '\n'
+        total_population[full_path] = str(pop)
 
     return total_population
 
