@@ -8,13 +8,13 @@ from flup.server.fcgi import WSGIServer
 from urlparse import parse_qs
 from multiprocessing import Process
 
-import clip2
+import clip
 
 syslog.syslog("test.fcgi starting")
 
 
 def get_pops(geom, callback_url):
-    pops = clip2.count_all_populations(geom, '/var/www/html/data')
+    pops = clip.count_all_populations(geom, '/var/www/html/data')
     popsj = json.dumps(pops)
 
     syslog.syslog("Computation completed. Result: ")
