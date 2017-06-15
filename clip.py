@@ -30,18 +30,22 @@ data_files = [
 ]
 
 
-def count_all_populations(geoms,data_path):
+def count_all_populations(geoms,data_path,verbose=False):
     geometry = json.loads(geoms)
     total_population = {}
 
     for filename in sorted(data_files):
+        if verbose:
+            print "processing %s" % filename
         full_path = data_path + '/' + filename
         pop = count_population_file(full_path, geometry)
+        if verbose:
+            print "population: %d" % pop
         total_population[full_path] = str(pop)
 
     return total_population
 
 
 if __name__ == "__main__":
-    geoms = json.load(sys.stdin)
-    print(count_all_populations(geoms, 'data'))
+    geoms = ''.join(sys.stdin.readlines())
+    print(count_all_populations(geoms, 'data', True))
