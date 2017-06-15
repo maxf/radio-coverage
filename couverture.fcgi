@@ -7,24 +7,32 @@ import json
 from flup.server.fcgi import WSGIServer
 from urlparse import parse_qs
 from multiprocessing import Process
+from datetime import datetime
 
 import clip
 
-syslog.syslog("test.fcgi starting")
+logfilename = "/tmp/couverture-%s.log" % datetime.now().isoformat()
+logfile = open(logfilename, "w")
+def log(message):
+    logfile.write(str(message) + '\n')
+    logfile.flush()
+
+log("test.fcgi starting")
 
 
 def get_pops(geom, callback_url):
     pops = clip.count_all_populations(geom, '/var/www/html/data')
     popsj = json.dumps(pops)
 
-    syslog.syslog("Computation completed. Result: ")
-    syslog.syslog(popsj)
+    log("Computation completed. Result: ")
+    log(popsj)
 
     r = requests.post(callback_url, {'populations': popsj})
 
-    syslog.syslog("Posting to " + callback_url)
-    syslog.syslog("response status: " + str(r.status_code))
-    syslog.syslog("response content: " + r.text)
+    log("Posting to " + callback_url)
+    log("response status: " + str(r.status_code))
+    log("response content: " + r.text)
+    logfile.close()
 
 
 def app(environ, start_response):
@@ -47,12 +55,12 @@ def app(environ, start_response):
 
 
         # start process in background
-        syslog.syslog("starting background process")
+        log("starting background process. Be patient, it can take a few minutes...")
         p = Process(target=get_pops, args=(geom,callback_url))
         p.start()
 
         start_response('200 OK', [('Content-Type', 'text/plain')])
-        yield "process started in the background\n"
+        yield "process started in the background. Server logfile is: %s\n" % logfile.name
     else:
         start_response('400 Bad Request', [('Content-Type', 'text/plain')])
         yield "Please use POST for this URL\n"

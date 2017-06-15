@@ -1,1 +1,2 @@
-curl -F geom=@couv.json -F callback="http://lapin-bl.eu/dummy-web-server.php" http://localhost:8080/couverture.fcgi
+curl -F geom=@couv.json -F callback="http://httpbin.org/post" http://localhost:8080/couverture.fcgi
+
