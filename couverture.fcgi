@@ -11,8 +11,9 @@ from datetime import datetime
 
 import clip
 
-logfilename = "/tmp/couverture-%s.log" % datetime.now().isoformat()
-logfile = open(logfilename, "w")
+logfilename = "couverture-%s.log" % datetime.now().isoformat()
+logfilepath = "/var/www/html/logs/" + logfilename
+logfile = open(logfilepath, "w")
 def log(message):
     logfile.write(str(message) + '\n')
     logfile.flush()
@@ -21,7 +22,7 @@ log("test.fcgi starting")
 
 
 def get_pops(geom, callback_url):
-    pops = clip.count_all_populations(geom, '/var/www/html/data')
+    pops = clip.count_all_populations(geom, '/var/www/html/data', logfile)
     popsj = json.dumps(pops)
 
     log("Computation completed. Result: ")
@@ -29,9 +30,10 @@ def get_pops(geom, callback_url):
 
     r = requests.post(callback_url, {'populations': popsj})
 
-    log("Posting to " + callback_url)
+    log("Posting result to " + callback_url)
     log("response status: " + str(r.status_code))
     log("response content: " + r.text)
+    log("finished.")
     logfile.close()
 
 
@@ -60,7 +62,7 @@ def app(environ, start_response):
         p.start()
 
         start_response('200 OK', [('Content-Type', 'text/plain')])
-        yield "process started in the background. Server logfile is: %s\n" % logfile.name
+        yield "process started in the background. Log at: http://<server>/logs/%s\n" % logfilename
     else:
         start_response('400 Bad Request', [('Content-Type', 'text/plain')])
         yield "Please use POST for this URL\n"
