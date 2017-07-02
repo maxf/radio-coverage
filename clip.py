@@ -22,11 +22,11 @@ def count_population_file(filename, geoms):
         return count_population(src, geoms)
 
 data_files = [
-"SEN14_A0005_adjv1.TIF", "SEN14_A2530_adjv1.TIF", "SEN14_A5055_adjv1.TIF",
-"SEN14_A0510_adjv1.TIF", "SEN14_A3035_adjv1.TIF", "SEN14_A5560_adjv1.TIF",
-"SEN14_A1015_adjv1.TIF", "SEN14_A3540_adjv1.TIF", "SEN14_A6065_adjv1.TIF",
-"SEN14_A1520_adjv1.TIF", "SEN14_A4045_adjv1.TIF", "SEN14_A65PL_adjv1.TIF",
-"SEN14_A2025_adjv1.TIF", "SEN14_A4550_adjv1.TIF"
+"SEN14_A0005_adjv1.TIF" #, "SEN14_A2530_adjv1.TIF", "SEN14_A5055_adjv1.TIF",
+# "SEN14_A0510_adjv1.TIF", "SEN14_A3035_adjv1.TIF", "SEN14_A5560_adjv1.TIF",
+# "SEN14_A1015_adjv1.TIF", "SEN14_A3540_adjv1.TIF", "SEN14_A6065_adjv1.TIF",
+# "SEN14_A1520_adjv1.TIF", "SEN14_A4045_adjv1.TIF", "SEN14_A65PL_adjv1.TIF",
+# "SEN14_A2025_adjv1.TIF", "SEN14_A4550_adjv1.TIF"
 ]
 
 
