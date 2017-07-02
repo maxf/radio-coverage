@@ -18,22 +18,26 @@ def log(message):
     logfile.write(str(message) + '\n')
     logfile.flush()
 
-log("test.fcgi starting")
+log('''<html><head><meta http-equiv="refresh" content="3"></head><body><pre>''')
 
 
 def get_pops(geom, callback_url):
     pops = clip.count_all_populations(geom, '/var/www/html/data', logfile)
     popsj = json.dumps(pops)
 
-    log("Computation completed. Result: ")
-    log(popsj)
+    log("</pre>")
+    log("<h1>Computation completed. Result: </h1>")
+    log("<pre>%s</pre>" % popsj)
 
     r = requests.post(callback_url, {'populations': popsj})
 
-    log("Posting result to " + callback_url)
-    log("response status: " + str(r.status_code))
-    log("response content: " + r.text)
-    log("finished.")
+    log("<h2>Callback</h2>")
+    log("<p>Posting result to %s</p>" % callback_url)
+    log("<p>Server response status: %d</p>" % str(r.status_code))
+    log("<p>Server response content: %s</p>" % r.text)
+    log("<p>finished.</p>")
+    log("</body>")
+    log("</html>")
     logfile.close()
 
 
@@ -61,7 +65,7 @@ def app(environ, start_response):
         p = Process(target=get_pops, args=(geom,callback_url))
         p.start()
 
-        start_response('200 OK', [('Content-Type', 'text/plain')])
+        start_response('303 See Other', [('Location', '/logs/%s' % logfilename)])
         yield "process started in the background. Log at: http://<server>/logs/%s\n" % logfilename
     else:
         start_response('400 Bad Request', [('Content-Type', 'text/plain')])
