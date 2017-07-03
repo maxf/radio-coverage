@@ -1,13 +1,14 @@
-<form method="post" action="couverture.fcgi">
+<form id="form" method="post" action="couverture.fcgi">
   <p>
-    <label>Geometry: <input type="file" name="geom"/></label>
+    <label>Geometry (GeoJSON):<br/><textarea name="geom" cols="80" rows="20"/></textarea></label>
   </p>
 
   <p>
-    <label>Callback: <input type="text" name="callback"></label>
+    <label>Callback:<br/><input type="text" name="callback"></label>
   </p>
 
   <p>
     <input type="submit" value="Go" />
   </p>
 </form>
+<script>document.getElementById('form').setAttribute('action', 'couverture.fcgi?' + Date.now())</script>

@@ -2,7 +2,7 @@
 
 import cgi
 import requests
-import sys, os, syslog
+import sys, os
 import json
 from flup.server.fcgi import WSGIServer
 from urlparse import parse_qs
@@ -11,33 +11,33 @@ from datetime import datetime
 
 import clip
 
-logfilename = "couverture-%s.log" % datetime.now().isoformat()
-logfilepath = "/var/www/html/logs/" + logfilename
-logfile = open(logfilepath, "w")
-def log(message):
+
+def log(logfile, message):
     logfile.write(str(message) + '\n')
     logfile.flush()
 
-log('''<html><head><meta http-equiv="refresh" content="3"></head><body><pre>''')
 
+def get_pops(logfile, geom, callback_url):
+    log(logfile, "<pre>starting background process...\n")
 
-def get_pops(geom, callback_url):
     pops = clip.count_all_populations(geom, '/var/www/html/data', logfile)
     popsj = json.dumps(pops)
 
-    log("</pre>")
-    log("<h1>Computation completed. Result: </h1>")
-    log("<pre>%s</pre>" % popsj)
+    log(logfile, "</pre>")
+    log(logfile, "<h1>Computation completed. Result: </h1>")
+    log(logfile, "<pre>%s</pre>" % popsj)
 
     r = requests.post(callback_url, {'populations': popsj})
 
-    log("<h2>Callback</h2>")
-    log("<p>Posting result to %s</p>" % callback_url)
-    log("<p>Server response status: %d</p>" % str(r.status_code))
-    log("<p>Server response content: %s</p>" % r.text)
-    log("<p>finished.</p>")
-    log("</body>")
-    log("</html>")
+    log(logfile, "<h2>Callback</h2>")
+    log(logfile, "<p>Posting result to %s</p>" % callback_url)
+    log(logfile, "<p>Server response status: %d</p>" % r.status_code)
+    log(logfile, "<p>Server response content: <pre>%s</pre></p>" % r.text)
+    log(logfile, "<p>finished.</p>")
+    log(logfile, "<p><a href='/'>Go back</a></p>")
+    log(logfile, "<script>clearInterval(z)</script>")
+    log(logfile, "</body>")
+    log(logfile, "</html>")
     logfile.close()
 
 
@@ -59,14 +59,18 @@ def app(environ, start_response):
             start_response('400 Bad Request', [('Content-Type', 'text/plain')])
             yield "You must pass two POST parameters: callback and geo\n"
 
+        logfilename = "couverture-%s.log" % datetime.now().isoformat()
+        logfilepath = "/var/www/html/jobs/" + logfilename
+        logfile = open(logfilepath, "w")
 
-        # start process in background
-        log("starting background process. Be patient, it can take a few minutes...")
-        p = Process(target=get_pops, args=(geom,callback_url))
+        log(logfile, '''<html><body><h1>Radio Population Coverage</h1>
+        <script>var z = setInterval(function() { window.location.reload(true) }, 3000);</script>''')
+
+        p = Process(target=get_pops, args=(logfile, geom, callback_url))
         p.start()
 
-        start_response('303 See Other', [('Location', '/logs/%s' % logfilename)])
-        yield "process started in the background. Log at: http://<server>/logs/%s\n" % logfilename
+        start_response('303 See Other', [('Location', '/jobs/%s' % logfilename)])
+        yield "process started in the background."
     else:
         start_response('400 Bad Request', [('Content-Type', 'text/plain')])
         yield "Please use POST for this URL\n"
