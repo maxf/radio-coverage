@@ -39,8 +39,7 @@ data_files = [
 ]
 
 
-def count_all_populations(geoms, data_path, output = None):
-    geometry = json.loads(geoms)
+def count_all_populations(geometry, data_path, output = None):
     total_population = {}
 
     for file in sorted(data_files):
@@ -59,4 +58,4 @@ def count_all_populations(geoms, data_path, output = None):
 
 if __name__ == "__main__":
     geoms = ''.join(sys.stdin.readlines())
-    print(count_all_populations(geoms, 'data'))
+    print(count_all_populations(json.loads(geoms), 'data'))
