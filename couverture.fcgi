@@ -8,6 +8,7 @@ from flup.server.fcgi import WSGIServer
 from urlparse import parse_qs
 from multiprocessing import Process
 from datetime import datetime
+import syslog
 
 import clip
 
@@ -17,14 +18,19 @@ def log(logfile, message):
     logfile.flush()
 
 
-def get_pops(logfile, radio_data, callback_url):
+def get_pops(logfile, radio_data, config, callback_url):
     log(logfile, "<pre>starting background process...\n")
     pops = {}
     try:
-        pops = clip.count_all_populations(radio_data['geojson'], '/var/www/html/data', logfile)
+        pops = clip.count_all_populations(
+            radio_data['geojson'],
+            config['html_path'],
+            config['data_files'],
+            logfile
+        )
     except Exception as e:
-        log(logfile, 'clip.count_all_populations failed')
-        log(logfile, e)
+        log(logfile, "except:")
+        log(str(e))
 
     pops['name'] = radio_data['name']
     popsj = json.dumps(pops)
@@ -54,6 +60,10 @@ def app(environ, start_response):
     logfile = open(logfilepath, "w")
 
     if environ['REQUEST_METHOD'] == 'POST':
+
+        with open("config.json") as config_file:
+            config = json.load(config_file)
+
         post_env = environ.copy()
         post_env['QUERY_STRING'] = ''
         post = cgi.FieldStorage(
@@ -78,7 +88,7 @@ def app(environ, start_response):
         log(logfile, '''<html><body><h1>Radio Population Coverage</h1>
         <script>var z = setInterval(function() { window.location.reload(true) }, 3000);</script>''')
 
-        p = Process(target=get_pops, args=(logfile, radio_data, callback_url))
+        p = Process(target=get_pops, args=(logfile, radio_data, config, callback_url))
         p.start()
 
         start_response('303 See Other', [('Location', '/jobs/%s' % logfilename)])
