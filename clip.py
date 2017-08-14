@@ -3,7 +3,6 @@ from rasterio.tools.mask import mask
 import json
 import sys
 import numpy as np
-import syslog
 
 def count_population(src, geoms):
     out_image, out_transform = mask(src, geoms['geometries'], crop=True)
@@ -24,7 +23,6 @@ def count_population_file(filename, geoms):
 
 
 def count_all_populations(geometry, base_path, data_files, output = None):
-    syslog.syslog(syslog.LOG_ERR, "ook")
     total_population = {}
     try:
         for file in sorted(data_files):
@@ -38,9 +36,6 @@ def count_all_populations(geometry, base_path, data_files, output = None):
                 output.flush()
             total_population[file['label']] = str(pop)
     except Exception as e:
-        syslog.syslog(syslog.LOG_ERR, "Exception")
-        syslog.syslog(syslog.LOG_ERR, str(e))
-
         total_population['error'] = str(e)
 
     return total_population

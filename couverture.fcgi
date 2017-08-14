@@ -8,7 +8,6 @@ from flup.server.fcgi import WSGIServer
 from urlparse import parse_qs
 from multiprocessing import Process
 from datetime import datetime
-import syslog
 
 import clip
 
