@@ -19,8 +19,13 @@ def log(logfile, message):
 
 def get_pops(logfile, radio_data, callback_url):
     log(logfile, "<pre>starting background process...\n")
+    pops = {}
+    try:
+        pops = clip.count_all_populations(radio_data['geojson'], '/var/www/html/data', logfile)
+    except Exception as e:
+        log(logfile, 'clip.count_all_populations failed')
+        log(logfile, e)
 
-    pops = clip.count_all_populations(radio_data['geojson'], '/var/www/html/data', logfile)
     pops['name'] = radio_data['name']
     popsj = json.dumps(pops)
 
@@ -44,6 +49,10 @@ def get_pops(logfile, radio_data, callback_url):
 
 def app(environ, start_response):
 
+    logfilename = "couverture-%s.log" % datetime.now().isoformat()
+    logfilepath = "/var/www/html/jobs/" + logfilename
+    logfile = open(logfilepath, "w")
+
     if environ['REQUEST_METHOD'] == 'POST':
         post_env = environ.copy()
         post_env['QUERY_STRING'] = ''
@@ -59,16 +68,12 @@ def app(environ, start_response):
         except Exception:
             start_response('400 Bad Request', [('Content-Type', 'text/plain')])
             yield "You must pass two POST parameters: callback and geo\n"
-
-        logfilename = "couverture-%s.log" % datetime.now().isoformat()
-        logfilepath = "/var/www/html/jobs/" + logfilename
-        logfile = open(logfilepath, "w")
-
         try:
             radio_data = json.loads(radiojson)
         except Exception:
             start_response('400 Bad Request', [('Content-Type', 'text/plain')])
             yield "Invalid JSON passed\n"
+
 
         log(logfile, '''<html><body><h1>Radio Population Coverage</h1>
         <script>var z = setInterval(function() { window.location.reload(true) }, 3000);</script>''')
