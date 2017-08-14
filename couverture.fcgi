@@ -19,9 +19,9 @@ def log(logfile, message):
 
 def get_pops(logfile, radio_data, config, callback_url):
     log(logfile, "<pre>starting background process...\n")
-    pops = {}
+    result = {}
     try:
-        pops = clip.count_all_populations(
+        result['coverage'] = clip.count_all_populations(
             radio_data['geojson'],
             config['html_path'],
             config['data_files'],
@@ -31,14 +31,14 @@ def get_pops(logfile, radio_data, config, callback_url):
         log(logfile, "except:")
         log(str(e))
 
-    pops['name'] = radio_data['name']
-    popsj = json.dumps(pops)
+    result['name'] = radio_data['name']
+    result_json = json.dumps(result)
 
     log(logfile, "</pre>")
     log(logfile, "<h1>Computation completed. Result: </h1>")
-    log(logfile, "<pre>%s</pre>" % popsj)
+    log(logfile, "<pre>%s</pre>" % result_json)
 
-    r = requests.post(callback_url, popsj)
+    r = requests.post(callback_url, result_json)
 
     log(logfile, "<h2>Callback</h2>")
     log(logfile, "<p>Posting result to %s</p>" % callback_url)

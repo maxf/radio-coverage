@@ -42,14 +42,21 @@ def count_all_populations(geometry, base_path, data_files, output = None):
 
 
 if __name__ == "__main__":
-    geoms = ''.join(sys.stdin.readlines())
+    stdin = ''.join(sys.stdin.readlines())
+    radio_data = json.loads(stdin)
+    geoms = radio_data['geojson']
     with open("config.json") as config_file:
         config = json.load(config_file)
 
-    print(
-        count_all_populations(
-            json.loads(geoms),
-            config['html_path'],
-            config['data_files']
-        )
+    pops = count_all_populations(
+        geoms,
+        config['html_path'],
+        config['data_files']
     )
+
+    result = {
+        'name': radio_data['name'],
+        'coverage': pops
+    }
+
+    print(result)
